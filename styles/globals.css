@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #3b82f6;
+  --secondary: #10b981;
+  --accent: #f59e0b;
+  --background: #ffffff;
+  --surface: #f9fafb;
+  --text: #111827;
+  --border: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --background: #111827;
+  --surface: #1f2937;
+  --text: #f9fafb;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: theme('fontFamily.sans');
+  background-color: var(--background);
+  color: var(--text);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  border-color: var(--border);
+}
