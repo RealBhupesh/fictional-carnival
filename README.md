@@ -212,7 +212,7 @@ Uploaded images are stored in `public/uploads` with random UUID filenames. The d
    - Install Command: `npm install`
    - Build Command: `prisma generate && next build`
    - Output Directory: `.vercel/output` (handled by Next.js)
-4. Set environment variables (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `NEXT_PUBLIC_APP_URL`, etc.)
+4. In the Vercel dashboard, add the required environment variables (`DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `NEXT_PUBLIC_APP_URL`, etc.) under **Settings → Environment Variables**. Provide the values directly instead of referencing Vercel secrets so deployments don't fail when a secret alias is missing.
 5. After deployment, run Prisma migrations in production:
    ```bash
    npx prisma migrate deploy
