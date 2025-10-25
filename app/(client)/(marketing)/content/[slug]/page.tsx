@@ -1,15 +1,17 @@
 import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 
-interface ContentPageProps {
-  params: {
+type ContentPageProps = {
+  params: Promise<{
     slug: string;
-  };
-}
+  }>;
+};
 
 export default async function ContentPage({ params }: ContentPageProps) {
+  const { slug } = await params;
+
   const article = await prisma.content.findFirst({
-    where: { slug: params.slug, published: true },
+    where: { slug, published: true },
     include: {
       author: { select: { name: true } }
     }
