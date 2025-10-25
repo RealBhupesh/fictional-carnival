@@ -102,11 +102,15 @@ const UserTable = () => {
   const deleteUsers = async (ids: string[]) => {
     try {
       await Promise.all(
-        ids.map((id) =>
-          fetch(`/api/admin/users/${id}`, {
+        ids.map(async (id) => {
+          const response = await fetch(`/api/admin/users/${id}`, {
             method: "DELETE"
-          })
-        )
+          });
+          const json = await response.json();
+          if (!response.ok || !json?.success) {
+            throw new Error(json?.error ?? "Unable to delete user");
+          }
+        })
       );
       toast.success(`Deleted ${ids.length} user${ids.length > 1 ? "s" : ""}`);
       fetchUsers();

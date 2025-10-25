@@ -35,7 +35,9 @@ export const contentSchema = z.object({
   slug: z.string().min(3),
   content: z.string().min(10),
   excerpt: z.string().optional(),
-  image: z.string().url().optional(),
+  image: z
+    .union([z.string().url(), z.string().startsWith("/"), z.string().startsWith("data:")])
+    .optional(),
   published: z.boolean().optional(),
   publishDate: z.coerce.date().nullable().optional(),
   seoTitle: z.string().optional(),

@@ -1,5 +1,6 @@
 "use client";
 
+import MediaUpload from "@/components/admin/media-upload";
 import RichTextEditor from "@/components/admin/rich-text-editor";
 import { Button } from "@/components/shared/button";
 import { cn } from "@/lib/utils/tw";
@@ -13,17 +14,28 @@ interface ContentItem {
   slug: string;
   excerpt?: string | null;
   content: string;
+  image?: string | null;
   published: boolean;
   publishDate?: string | null;
   updatedAt: string;
 }
 
-const initialFormState = {
+interface ContentFormState {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  published: boolean;
+  publishDate: string;
+}
+
+const initialFormState: ContentFormState = {
   title: "",
   slug: "",
   excerpt: "",
   content: "<p>Start writing amazing content...</p>",
-  image: "",
+  image: undefined,
   published: false,
   publishDate: ""
 };
@@ -32,7 +44,7 @@ const ContentManager = () => {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState(initialFormState);
+  const [form, setForm] = useState<ContentFormState>(initialFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchContent = async () => {
@@ -40,10 +52,11 @@ const ContentManager = () => {
       setLoading(true);
       const response = await fetch("/api/admin/content");
       const json = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !json?.success) {
         throw new Error(json?.error ?? "Unable to load content");
       }
-      setItems(json.data.contents);
+      const contents = (json.data?.contents ?? []) as ContentItem[];
+      setItems(contents);
     } catch (error) {
       toast.error((error as Error).message ?? "Failed to fetch content");
     } finally {
@@ -59,9 +72,11 @@ const ContentManager = () => {
     event.preventDefault();
     try {
       setSaving(true);
+      const { image, publishDate, ...rest } = form;
       const payload = {
-        ...form,
-        publishDate: form.publishDate ? new Date(form.publishDate).toISOString() : null
+        ...rest,
+        image: image ?? undefined,
+        publishDate: publishDate ? new Date(publishDate).toISOString() : null
       };
       const endpoint = editingId ? `/api/admin/content/${editingId}` : "/api/admin/content";
       const method = editingId ? "PATCH" : "POST";
@@ -71,11 +86,11 @@ const ContentManager = () => {
         body: JSON.stringify(payload)
       });
       const json = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !json?.success) {
         throw new Error(json?.error ?? "Unable to save content");
       }
       toast.success(editingId ? "Content updated" : "Content created");
-      setForm(initialFormState);
+      setForm({ ...initialFormState });
       setEditingId(null);
       fetchContent();
     } catch (error) {
@@ -92,7 +107,7 @@ const ContentManager = () => {
       slug: item.slug,
       excerpt: item.excerpt ?? "",
       content: item.content,
-      image: "",
+      image: item.image ?? undefined,
       published: item.published,
       publishDate: item.publishDate ? format(new Date(item.publishDate), "yyyy-MM-dd") : ""
     });
@@ -106,7 +121,7 @@ const ContentManager = () => {
         body: JSON.stringify({ published: !item.published })
       });
       const json = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !json?.success) {
         throw new Error(json?.error ?? "Unable to update publish state");
       }
       toast.success(!item.published ? "Content published" : "Content reverted to draft");
@@ -120,7 +135,7 @@ const ContentManager = () => {
     try {
       const response = await fetch(`/api/admin/content/${id}`, { method: "DELETE" });
       const json = await response.json();
-      if (!response.ok) {
+      if (!response.ok || !json?.success) {
         throw new Error(json?.error ?? "Unable to delete content");
       }
       toast.success("Content deleted");
@@ -174,6 +189,7 @@ const ContentManager = () => {
               rows={3}
             />
           </div>
+          <MediaUpload value={form.image} onChange={(image) => setForm((prev) => ({ ...prev, image }))} />
           <div>
             <label className="text-sm font-medium text-text" htmlFor="publishDate">
               Publish date
@@ -233,6 +249,11 @@ const ContentManager = () => {
                   {item.published ? "Published" : "Draft"}
                 </span>
               </div>
+              {item.image ? (
+                <div className="mt-3 overflow-hidden rounded-2xl border border-border/80">
+                  <img src={item.image} alt={`${item.title} cover`} className="h-32 w-full object-cover" />
+                </div>
+              ) : null}
               <p className="mt-2 text-sm text-text/70">{item.excerpt ?? "No excerpt provided."}</p>
               <p className="mt-2 text-xs text-text/50">
                 Updated {format(new Date(item.updatedAt), "MMM d, yyyy HH:mm")}

@@ -1,6 +1,3 @@
-import { cn } from "@/lib/utils/tw";
-import { ActivityLog } from "@prisma/client";
-
 interface ActivityFeedProps {
   items: Array<{
     id: string;
